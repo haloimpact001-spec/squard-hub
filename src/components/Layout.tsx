@@ -13,7 +13,7 @@ import { playClick } from '../lib/soundEngine';
 const TOOLS = [
   { id: 'names', name: 'Name Generator', path: '/names', icon: 'T', available: true },
   { id: 'stickers', name: 'Sticker Maker', path: '/stickers', icon: '', available: true },
-  { id: 'card', name: 'Gamer ID Card', path: '/card', icon: '🪪', available: true }, // <-- ADD THIS LINE
+  { id: 'card', name: 'Gamer ID Card', path: '/card', icon: '🪪', available: true },
   { id: 'chat', name: 'Squad Chat', path: '#', icon: '💬', available: false },
   { id: 'teams', name: 'Teams & Clans', path: '#', icon: '🛡️', available: false },
   { id: 'tournaments', name: 'Tournaments', path: '#', icon: '🏆', available: false },
@@ -25,7 +25,6 @@ export function Layout() {
   const { data: profile } = useProfile();
   const location = useLocation();
 
-  // New state for the Tools dropdown menu
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const toolsMenuRef = useRef<HTMLDivElement>(null);
 
@@ -122,7 +121,7 @@ export function Layout() {
                       <Link 
                         key={tool.id} 
                         to={tool.path} 
-                        onClick={() => playClick()}
+                        onClick={() => { playClick(); setIsToolsOpen(false); }}
                         style={{
                           display: 'flex', alignItems: 'center', gap: '0.75rem',
                           padding: '0.75rem', borderRadius: '8px',
@@ -170,7 +169,7 @@ export function Layout() {
           
           {/* RIGHT: User Actions */}
           <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '100px', justifyContent: 'flex-end' }}>
-            {user && profile && (
+            {user && profile ? (
               <>
                 {/* LOBBY BUTTON */}
                 <Link 
@@ -213,6 +212,23 @@ export function Layout() {
                   </svg>
                 </button>
               </>
+            ) : (
+              /* LOGGED OUT STATE: Premium Sign In Button */
+              <button 
+                onClick={() => { playClick(); setAuthOpen(true); }}
+                className="btn-primary"
+                style={{ 
+                  padding: '0 1.25rem', 
+                  fontSize: '13px', 
+                  fontWeight: '700', 
+                  minHeight: '40px',
+                  borderRadius: '10px',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)'
+                }}
+              >
+                Sign In
+              </button>
             )}
           </nav>
         </div>
