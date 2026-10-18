@@ -2,9 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0b0f1a" />
     
+    <!-- Viewport: Removed user-scalable=no to allow accessibility, but kept max-scale for app feel -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#0B0D14" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Apple iOS Specific Tags (Makes it look like a native app when added to home screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Squard Hub" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
     <!-- Primary Meta Tags -->
     <title>Squard Hub - Free Stylish Names, Stickers & Gamer Wagering</title>
     <meta name="title" content="Squard Hub - Free Stylish Names, Stickers & Gamer Wagering" />
@@ -12,27 +24,24 @@
     <meta name="keywords" content="Free Fire names, Dream League Soccer names, Lagos Life nicknames, stylish name generator, sticker maker, Nigerian gamers, Squard Hub, gamer wagering" />
     <meta name="author" content="Squard Hub" />
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Open Graph / Facebook / WhatsApp (Crucial for viral sharing) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://squard-hub.vercel.app/" />
+    <meta property="og:url" content="https://squardhub-livid.vercel.app/" />
     <meta property="og:title" content="Squard Hub - Free Stylish Names & Gamer Wagering" />
     <meta property="og:description" content="Get the coolest gaming names, custom stickers, and challenge gamers to real-time coin wagers!" />
     <meta property="og:image" content="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://squard-hub.vercel.app/" />
+    <meta property="twitter:url" content="https://squardhub-livid.vercel.app/" />
     <meta property="twitter:title" content="Squard Hub - Free Stylish Names & Gamer Wagering" />
     <meta property="twitter:description" content="Get the coolest gaming names, custom stickers, and challenge gamers to real-time coin wagers!" />
     <meta property="twitter:image" content="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%3C/text%3E%3C/svg%3E" />
-    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>

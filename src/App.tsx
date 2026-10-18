@@ -5,6 +5,7 @@ import { NameGenerator } from './pages/NameGenerator';
 import { StickerMaker } from './pages/StickerMaker';
 import { Rewards } from './pages/Rewards';
 import { Lobby } from './pages/Lobby';
+import { GamerCard } from './pages/GamerCard';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="stickers" element={<StickerMaker />} />
         <Route path="rewards" element={<Rewards />} />
         <Route path="lobby" element={<Lobby />} />
+        <Route path="card" element={<GamerCard />} />
       </Route>
     </Routes>
   );

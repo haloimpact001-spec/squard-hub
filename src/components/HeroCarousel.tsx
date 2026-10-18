@@ -23,9 +23,9 @@ const slides = [
   },
   {
     id: 4,
-    image: '/images/race.png',
+    image: '/images/epic.png',
     fallbackColor: '#2e1a1a',
-    alt: 'High speed racing car'
+    alt: 'Epic Games Action Scene'
   },
   {
     id: 5,
@@ -38,6 +38,12 @@ const slides = [
     image: '/images/combo.png',
     fallbackColor: '#2e2e1a',
     alt: 'Combo gaming action'
+  },
+   {
+    id: 7,
+    image: '/images/lapis.png',
+    fallbackColor: '#2e2e1a',
+    alt: 'Lapis gaming action'
   }
 ];
 
