@@ -1,37 +1,43 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// REPLACE THESE URLs WITH YOUR LOCAL IMAGES IN /public/images/ IF NEEDED
+// CORRECTED PATHS: Start with '/' because the 'public' folder maps to the root URL
 const slides = [
   {
     id: 1,
-    image: 'public/images/Cu.png',
+    image: '/images/Cu.png',
+    fallbackColor: '#1a2332',
     alt: 'Football stadium at night'
   },
   {
     id: 2,
-    image: 'public/images/GV.png',
+    image: '/images/GV.png',
+    fallbackColor: '#2d1a1a',
     alt: 'Tactical gaming environment'
   },
   {
     id: 3,
-    image: 'public/images/ll.png',
+    image: '/images/ll.png',
+    fallbackColor: '#1a1a2e',
     alt: 'Vibrant city skyline at sunset'
   },
   {
     id: 4,
-    image: 'public/images/race.png',
+    image: '/images/race.png',
+    fallbackColor: '#2e1a1a',
     alt: 'High speed racing car'
   },
   {
     id: 5,
-    image: 'public/images/football.png',
+    image: '/images/football.png',
+    fallbackColor: '#1a2e1a',
     alt: 'Exciting football match'
   },
-   {
+  {
     id: 6,
-    image: 'public/images/combo.png',
-    alt: 'Exciting football match'
+    image: '/images/combo.png',
+    fallbackColor: '#2e2e1a',
+    alt: 'Combo gaming action'
   }
 ];
 
@@ -53,7 +59,8 @@ export function HeroCarousel() {
       height: '85vh', 
       minHeight: '500px', 
       overflow: 'hidden', 
-      borderRadius: '0 0 16px 16px' 
+      borderRadius: '0 0 16px 16px',
+      backgroundColor: '#05070f'
     }}>
       {/* Background Images */}
       {slides.map((slide, index) => (
@@ -64,8 +71,10 @@ export function HeroCarousel() {
             position: 'absolute',
             inset: 0,
             backgroundImage: `url(${slide.image})`,
+            backgroundColor: slide.fallbackColor, // Shows if image fails to load
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
             opacity: index === currentSlide ? 1 : 0,
             transition: 'opacity 1.5s ease-in-out',
             zIndex: index === currentSlide ? 1 : 0
@@ -80,7 +89,7 @@ export function HeroCarousel() {
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at center, rgba(5, 7, 15, 0.4) 0%, rgba(5, 7, 15, 0.9) 100%)',
+        background: 'radial-gradient(circle at center, rgba(5, 7, 15, 0.3) 0%, rgba(5, 7, 15, 0.7) 100%)',
         zIndex: 2
       }} />
 

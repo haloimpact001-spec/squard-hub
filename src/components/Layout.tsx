@@ -1,27 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ProfileModal } from './ProfileModal';
 import { DailyRewardsModal } from './DailyRewardsModal';
 import { LiveActivityFeed } from './LiveActivityFeed';
-import { getUserProfile } from '../lib/localStorage';
+import { AuthModal } from './AuthModal';
+import { useUIStore } from '../store/useUIStore';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 
 export function Layout() {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isRewardsOpen, setIsRewardsOpen] = useState(false);
-  const [tokens, setTokens] = useState(0);
+  const { isProfileOpen, setProfileOpen, isRewardsOpen, setRewardsOpen, setAuthOpen } = useUIStore();
+  const { user, loading, signOut } = useAuth();
+  const { data: profile } = useProfile();
   const location = useLocation();
 
+  // Show Auth modal if user is not logged in and not loading
   useEffect(() => {
-    const profile = getUserProfile();
-    setTokens(profile.tokens);
-    
-    // Trigger daily rewards modal on mount if it's a new day
-    const today = new Date().toISOString().split('T')[0];
-    if (profile.lastLoginDate !== today) {
-      const timer = setTimeout(() => setIsRewardsOpen(true), 1000);
-      return () => clearTimeout(timer);
+    if (!loading && !user) {
+      setAuthOpen(true);
     }
-  }, [location.pathname]); // Re-run when route changes to refresh token count
+  }, [loading, user, setAuthOpen]);
+
+  const handleLogout = async () => {
+    await signOut();
+    setProfileOpen(false);
+    setAuthOpen(true);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -39,40 +43,59 @@ export function Layout() {
             Squard Hub
           </Link>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            {/* Token Counter / Rewards Link */}
-            <Link 
-              to="/rewards"
-              className="gamer-card"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.4rem 0.8rem',
-                textDecoration: 'none',
-                background: 'rgba(255, 215, 0, 0.1)',
-                border: '1px solid rgba(255, 215, 0, 0.3)'
-              }}
-            >
-              <span style={{ fontSize: '14px' }}>🪙</span>
-              <span className="text-ui" style={{ color: '#ffd700', fontWeight: '800', fontSize: '13px' }}>{tokens}</span>
-            </Link>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {user && profile && (
+              <>
+                <Link 
+                  to="/lobby"
+                  className="gamer-card"
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    textDecoration: 'none',
+                    background: 'rgba(255, 77, 77, 0.1)',
+                    border: '1px solid rgba(255, 77, 77, 0.3)',
+                    color: '#ff4d4d',
+                    fontWeight: '800',
+                    fontSize: '12px',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  ⚔️ Lobby
+                </Link>
 
-            {/* Profile Button */}
-            <button 
-              onClick={() => setIsProfileOpen(true)}
-              className="gamer-card"
-              style={{
-                width: '36px', height: '36px', borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(124, 92, 255, 0.2)', border: '1px solid var(--accent)',
-                color: 'var(--text-primary)', fontSize: '1rem', padding: 0, minHeight: '36px'
-              }}
-              aria-label="Open Profile"
-            >
-              👤
-            </button>
-          </div>
+                <Link 
+                  to="/rewards"
+                  className="gamer-card"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.4rem 0.8rem',
+                    textDecoration: 'none',
+                    background: 'rgba(255, 215, 0, 0.1)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)'
+                  }}
+                >
+                  <span style={{ fontSize: '14px' }}>🪙</span>
+                  <span className="text-ui" style={{ color: '#ffd700', fontWeight: '800', fontSize: '13px' }}>{profile.coins}</span>
+                </Link>
+
+                <button 
+                  onClick={() => setProfileOpen(true)}
+                  className="gamer-card"
+                  style={{
+                    width: '36px', height: '36px', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(124, 92, 255, 0.2)', border: '1px solid var(--accent)',
+                    color: 'var(--text-primary)', fontSize: '1rem', padding: 0, minHeight: '36px'
+                  }}
+                  aria-label="Open Profile"
+                >
+                  👤
+                </button>
+              </>
+            )}
+          </nav>
         </div>
       </header>
       
@@ -90,16 +113,17 @@ export function Layout() {
         </div>
       </footer>
 
+      {/* Modals */}
+      <AuthModal />
       <ProfileModal 
         isOpen={isProfileOpen} 
-        onClose={() => setIsProfileOpen(false)} 
-        onProfileUpdate={() => setTokens(getUserProfile().tokens)} 
+        onClose={() => setProfileOpen(false)} 
+        onLogout={handleLogout}
       />
-      
       <DailyRewardsModal 
         isOpen={isRewardsOpen} 
-        onClose={() => setIsRewardsOpen(false)} 
-        onProfileUpdate={() => setTokens(getUserProfile().tokens)} 
+        onClose={() => setRewardsOpen(false)} 
+        onProfileUpdate={() => {}} 
       />
     </div>
   );

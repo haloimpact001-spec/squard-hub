@@ -4,6 +4,7 @@ import { Home } from './pages/Home';
 import { NameGenerator } from './pages/NameGenerator';
 import { StickerMaker } from './pages/StickerMaker';
 import { Rewards } from './pages/Rewards';
+import { Lobby } from './pages/Lobby';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="names" element={<NameGenerator />} />
         <Route path="stickers" element={<StickerMaker />} />
         <Route path="rewards" element={<Rewards />} />
+        <Route path="lobby" element={<Lobby />} />
       </Route>
     </Routes>
   );

@@ -137,3 +137,90 @@ export function simulatePayment(amountNaira: number): UserProfile {
   saveUserProfile(profile);
   return profile;
 }
+// --- GAMER LOBBY & WAGERING ENGINE ---
+
+export interface Match {
+  id: string;
+  host: string;
+  game: string; // e.g., 'Free Fire', 'DLS'
+  wager: number;
+  status: 'open' | 'completed' | 'cancelled';
+  winner?: string;
+  createdAt: number;
+}
+
+export function getWalletBalance(): number {
+  const profile = getUserProfile();
+  // Give new users 100 starting coins
+  if (profile.tokens === 0 && profile.createdAt > Date.now() - 10000) {
+    profile.tokens = 100;
+    saveUserProfile(profile);
+  }
+  return profile.tokens;
+}
+
+export function deductCoins(amount: number): boolean {
+  const profile = getUserProfile();
+  if (profile.tokens < amount) return false;
+  profile.tokens -= amount;
+  saveUserProfile(profile);
+  return true;
+}
+
+export function addCoins(amount: number): void {
+  const profile = getUserProfile();
+  profile.tokens += amount;
+  saveUserProfile(profile);
+}
+
+const MATCHES_KEY = 'squard_hub_matches';
+
+export function getMatches(): Match[] {
+  try {
+    const data = localStorage.getItem(MATCHES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function createMatch(host: string, game: string, wager: number): Match | null {
+  if (!deductCoins(wager)) return null; // Host must lock in their wager
+
+  const matches = getMatches();
+  const newMatch: Match = {
+    id: Date.now().toString(),
+    host,
+    game,
+    wager,
+    status: 'open',
+    createdAt: Date.now(),
+  };
+  matches.unshift(newMatch);
+  localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+  return newMatch;
+}
+
+export function settleMatch(matchId: string, winnerName: string): boolean {
+  const matches = getMatches();
+  const matchIndex = matches.findIndex(m => m.id === matchId);
+  
+  if (matchIndex === -1 || matches[matchIndex].status !== 'open') return false;
+
+  const match = matches[matchIndex];
+  match.status = 'completed';
+  match.winner = winnerName;
+
+  // Payout logic: Winner gets their wager back + the opponent's wager (2x total)
+  if (winnerName === match.host) {
+    addCoins(match.wager * 2);
+  } else {
+    // If the challenger won, we just add the total pot to their wallet
+    // (In a real app, the challenger's coins would have been deducted upon joining)
+    addCoins(match.wager * 2); 
+  }
+
+  matches[matchIndex] = match;
+  localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+  return true;
+}
