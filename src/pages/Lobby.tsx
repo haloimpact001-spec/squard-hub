@@ -1,100 +1,70 @@
 import { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useMatches } from '../hooks/useMatches';
-import { MatchModal } from '../components/MatchModal';
+import { Swords, Coins, Plus } from 'lucide-react';
 
 export function Lobby() {
   const { data: profile } = useProfile();
-  const { 
-    matches, isLoading, createMatchMutation, cancelMatchMutation, 
-    acceptMatchMutation, settleMatchMutation 
-  } = useMatches();
+  const { matches, isLoading, createMatchMutation, cancelMatchMutation, acceptMatchMutation, settleMatchMutation } = useMatches();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [game, setGame] = useState('Free Fire');
+  const [wager, setWager] = useState(10);
 
   const openMatches = matches?.filter(m => m.status === 'open') || [];
   const activeMatches = matches?.filter(m => m.status === 'active') || [];
 
-  const handleCreateMatch = (game: string, wager: number) => {
+  const handleCreateMatch = (e: React.FormEvent) => {
+    e.preventDefault();
     createMatchMutation.mutate(
       { game, wager },
       {
         onSuccess: () => setIsModalOpen(false),
-        onError: (err) => alert(err.message),
+        onError: (err: any) => alert(err.message),
       }
     );
   };
 
-  return (
-    <div className="container" style={{ padding: '2rem 16px', maxWidth: '1000px', margin: '0 auto' }}>
-      <h1 className="text-title neon-text" style={{ fontSize: '24px', marginBottom: '2rem', textAlign: 'center' }}>
-        Global Gamer Lobby
-      </h1>
+  const handleCancelMatch = (matchId: string) => {
+    if (window.confirm('Cancel this match? Your wager will be refunded.')) {
+      cancelMatchMutation.mutate(matchId);
+    }
+  };
 
-      {/* Wallet Header */}
-      <div className="gamer-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+  return (
+    <div className="container" style={{ paddingTop: '32px', maxWidth: '800px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <div className="text-caption" style={{ color: 'var(--text-muted)' }}>Your Wallet</div>
-          <div className="text-header" style={{ fontSize: '28px', fontWeight: '900', color: '#ffd700' }}>
-            {profile?.coins ?? 0} 🪙 Squard Coins
-          </div>
+          <h1 style={{ fontSize: '24px', marginBottom: '8px' }}>Global Gamer Lobby</h1>
+          <p className="text-secondary">Challenge friends and wager your Squard Coins.</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="gamer-btn-secondary"
-          style={{ minWidth: '200px' }}
-        >
-          ⚔️ Create New Challenge
+        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+          <Plus size={18} /> Create Challenge
         </button>
       </div>
 
-      {/* ACTIVE MATCHES (In Progress) */}
-      <h2 className="text-header" style={{ fontSize: '18px', marginBottom: '1rem', color: '#00e0b8' }}>
-        ⚡ Active Battles ({activeMatches.length})
-      </h2>
-      
+      <h2 style={{ marginBottom: '16px', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>Active Battles ({activeMatches.length})</h2>
       {activeMatches.length === 0 ? (
-        <p className="text-body" style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>No active battles right now.</p>
+        <div className="card" style={{ padding: '24px', textAlign: 'center', marginBottom: '32px' }}>
+          <p className="text-secondary">No active battles right now.</p>
+        </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
           {activeMatches.map(match => {
             const isHost = match.host_id === profile?.id;
             return (
-              <div key={match.id} className="gamer-card" style={{ padding: '1.5rem', borderColor: '#00e0b8' }}>
-                <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0, 224, 184, 0.2)', color: '#00e0b8', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
-                  IN PROGRESS
+              <div key={match.id} className="card" style={{ borderColor: 'var(--accent)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase' }}>{match.game}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>IN PROGRESS</span>
                 </div>
-                <div className="text-caption" style={{ color: 'var(--accent-secondary)', marginBottom: '0.5rem' }}>{match.game}</div>
-                <div className="text-body" style={{ fontWeight: '700', marginBottom: '0.5rem' }}>
-                  {match.host_username} vs {match.challenger_username}
+                <p className="text-secondary" style={{ marginBottom: '8px' }}>{match.host_username} vs {match.challenger_username}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--accent)', fontWeight: '700' }}>
+                  <Coins size={16} /> Pot: {match.wager * 2}
                 </div>
-                <div className="text-header" style={{ color: '#ffd700', fontSize: '20px', fontWeight: '900', marginBottom: '1rem' }}>
-                  Pot: {match.wager * 2} 🪙
-                </div>
-                
                 {isHost && (
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                      onClick={() => {
-                        if(window.confirm('Declare YOURSELF as the winner?')) {
-                          settleMatchMutation.mutate({ matchId: match.id, winnerIsHost: true });
-                        }
-                      }}
-                      className="gamer-btn-secondary"
-                      style={{ flex: 1, fontSize: '11px' }}
-                    >
-                      I Won
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if(window.confirm('Declare CHALLENGER as the winner?')) {
-                          settleMatchMutation.mutate({ matchId: match.id, winnerIsHost: false });
-                        }
-                      }}
-                      className="gamer-btn"
-                      style={{ flex: 1, fontSize: '11px', background: '#555' }}
-                    >
-                      They Won
-                    </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => settleMatchMutation.mutate({ matchId: match.id, winnerIsHost: true })} className="btn btn-primary" style={{ flex: 1, fontSize: '13px' }}>I Won</button>
+                    <button onClick={() => settleMatchMutation.mutate({ matchId: match.id, winnerIsHost: false })} className="btn btn-secondary" style={{ flex: 1, fontSize: '13px' }}>They Won</button>
                   </div>
                 )}
               </div>
@@ -103,55 +73,31 @@ export function Lobby() {
         </div>
       )}
 
-      {/* OPEN MATCHES (Waiting for Challenger) */}
-      <h2 className="text-header neon-text-secondary" style={{ fontSize: '18px', marginBottom: '1rem' }}>
-        Open Challenges ({openMatches.length})
-      </h2>
-      
+      <h2 style={{ marginBottom: '16px', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>Open Challenges ({openMatches.length})</h2>
       {isLoading ? (
-        <p className="text-body" style={{ color: 'var(--text-muted)' }}>Loading matches...</p>
+        <p className="text-secondary">Loading matches...</p>
       ) : openMatches.length === 0 ? (
-        <div className="gamer-card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-          No active challenges. Be the first to post a wager!
+        <div className="card" style={{ padding: '24px', textAlign: 'center' }}>
+          <p className="text-secondary">No open challenges. Be the first to post a wager!</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
           {openMatches.map(match => {
             const isHost = match.host_id === profile?.id;
             return (
-              <div key={match.id} className="gamer-card" style={{ padding: '1.5rem', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(255, 77, 77, 0.2)', color: '#ff4d4d', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
-                  LIVE
+              <div key={match.id} className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase' }}>{match.game}</span>
+                  <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: '700' }}>LIVE</span>
                 </div>
-                <div className="text-caption" style={{ color: 'var(--accent-secondary)', marginBottom: '0.5rem' }}>{match.game}</div>
-                <div className="text-body" style={{ fontWeight: '700', marginBottom: '0.5rem' }}>Host: {match.host_username}</div>
-                <div className="text-header" style={{ color: '#ffd700', fontSize: '20px', fontWeight: '900', marginBottom: '1rem' }}>
-                  Wager: {match.wager} 🪙
+                <p className="text-secondary" style={{ marginBottom: '8px' }}>Host: {match.host_username}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--accent)', fontWeight: '700' }}>
+                  <Coins size={16} /> Wager: {match.wager}
                 </div>
-                
                 {isHost ? (
-                  <button 
-                    onClick={() => {
-                      if(window.confirm('Cancel this match? Your wager will be refunded.')) {
-                        cancelMatchMutation.mutate(match.id);
-                      }
-                    }}
-                    className="gamer-btn"
-                    style={{ width: '100%', fontSize: '12px', background: '#555' }}
-                  >
-                    Cancel & Refund
-                  </button>
+                  <button onClick={() => handleCancelMatch(match.id)} className="btn btn-secondary" style={{ width: '100%', fontSize: '13px' }}>Cancel & Refund</button>
                 ) : (
-                  <button 
-                    onClick={() => {
-                      if(window.confirm(`Accept this ${match.wager} coin challenge?`)) {
-                        acceptMatchMutation.mutate(match.id);
-                      }
-                    }}
-                    className="gamer-btn"
-                    style={{ width: '100%', fontSize: '12px' }}
-                    disabled={acceptMatchMutation.isPending}
-                  >
+                  <button onClick={() => acceptMatchMutation.mutate(match.id)} className="btn btn-primary" style={{ width: '100%', fontSize: '13px' }} disabled={acceptMatchMutation.isPending}>
                     {acceptMatchMutation.isPending ? 'Joining...' : 'Accept Challenge'}
                   </button>
                 )}
@@ -161,12 +107,35 @@ export function Lobby() {
         </div>
       )}
 
-      <MatchModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleCreateMatch}
-        isSubmitting={createMatchMutation.isPending}
-      />
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 19, 24, 0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setIsModalOpen(false)}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '24px' }}>Create Challenge</h2>
+            <form onSubmit={handleCreateMatch} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label className="text-secondary" style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>Game</label>
+                <select value={game} onChange={e => setGame(e.target.value)} className="input">
+                  <option>Free Fire</option>
+                  <option>Dream League Soccer</option>
+                  <option>Lagos Life</option>
+                  <option>Call of Duty Mobile</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-secondary" style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>Wager (Coins)</label>
+                <input type="number" value={wager} onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 0))} className="input" min="1" required />
+                <p className="text-secondary" style={{ fontSize: '12px', marginTop: '8px' }}>Available: {profile?.coins || 0}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={createMatchMutation.isPending}>
+                  {createMatchMutation.isPending ? 'Locking...' : 'Post Challenge'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
