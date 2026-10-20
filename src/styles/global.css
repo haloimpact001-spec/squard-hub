@@ -359,3 +359,43 @@ button:active, .btn:active { transform: scale(0.97); }
   .desktop-only-split { display: block !important; }
   .mobile-only-logo { display: none !important; }
 }
+/* --- RESPONSIVE AUTH LAYOUT --- */
+.auth-layout {
+  display: flex;
+  flex-direction: column; /* Mobile first: Stack vertically */
+  min-height: 100vh;
+  width: 100%;
+  background-color: #0F1318;
+}
+
+.auth-carousel-section {
+  position: relative;
+  width: 100%;
+  height: 35vh; /* Takes top 35% of screen on mobile */
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.auth-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: #0F1318; /* Solid dark background for the form area */
+}
+
+/* Desktop: Switch to side-by-side */
+@media (min-width: 768px) {
+  .auth-layout {
+    flex-direction: row; 
+  }
+  .auth-carousel-section {
+    width: 50%;
+    height: 100vh; /* Full height on desktop */
+  }
+  .auth-form-section {
+    width: 50%;
+    padding: 32px;
+  }
+}

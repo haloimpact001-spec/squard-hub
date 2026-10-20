@@ -7,14 +7,13 @@ export function useMatches() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // 1. Fetch matches
   const { data: matches, isLoading } = useQuery<Match[]>({
     queryKey: ['matches'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
         .select('*')
-        .in('status', ['open', 'active'])
+        .in('status', ['open', 'active', 'pending_confirmation'])
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -22,28 +21,18 @@ export function useMatches() {
     },
   });
 
-  // 2. REALTIME SUBSCRIPTION (The Magic)
   useEffect(() => {
     const channel = supabase
       .channel('realtime-matches')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'matches' },
-        (payload) => {
-          console.log('Realtime update:', payload);
-          // Invalidate query to fetch fresh data from DB
-          queryClient.invalidateQueries({ queryKey: ['matches'] });
-          queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['matches'] });
+        queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [queryClient, user?.id]);
 
-  // 3. Create Match
   const createMatchMutation = useMutation({
     mutationFn: async ({ game, wager }: { game: string; wager: number }) => {
       const { data, error } = await supabase.rpc('create_match_secure', { p_game: game, p_wager: wager });
@@ -56,7 +45,6 @@ export function useMatches() {
     },
   });
 
-  // 4. Cancel Match
   const cancelMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
       const { data, error } = await supabase.rpc('cancel_match_secure', { p_match_id: matchId });
@@ -69,7 +57,6 @@ export function useMatches() {
     },
   });
 
-  // 5. Accept Match
   const acceptMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
       const { data, error } = await supabase.rpc('accept_match_secure', { p_match_id: matchId });
@@ -82,12 +69,27 @@ export function useMatches() {
     },
   });
 
-  // 6. Settle Match
-  const settleMatchMutation = useMutation({
-    mutationFn: async ({ matchId, winnerIsHost }: { matchId: string; winnerIsHost: boolean }) => {
-      const { data, error } = await supabase.rpc('settle_match_secure', { 
+  // NEW: Host declares they won
+  const declareWinnerMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      const { data, error } = await supabase.rpc('declare_winner_secure', { 
         p_match_id: matchId, 
-        p_winner_is_host: winnerIsHost 
+        p_winner_is_host: true 
+      });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    },
+  });
+
+  // NEW: Challenger confirms or disputes
+  const resolveMatchMutation = useMutation({
+    mutationFn: async ({ matchId, action }: { matchId: string; action: 'confirm' | 'dispute' }) => {
+      const { data, error } = await supabase.rpc('resolve_match_secure', { 
+        p_match_id: matchId, 
+        p_action: action 
       });
       if (error) throw new Error(error.message);
       return data;
@@ -99,11 +101,7 @@ export function useMatches() {
   });
 
   return { 
-    matches, 
-    isLoading, 
-    createMatchMutation, 
-    cancelMatchMutation, 
-    acceptMatchMutation,
-    settleMatchMutation 
+    matches, isLoading, createMatchMutation, cancelMatchMutation, 
+    acceptMatchMutation, declareWinnerMutation, resolveMatchMutation 
   };
 }

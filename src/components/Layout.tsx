@@ -8,12 +8,16 @@ import { DirectiveGuide } from './DirectiveGuide';
 import { useUIStore } from '../store/useUIStore';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
+import { trackPageView } from '../lib/analytics';
 
 export function Layout() {
   const { isProfileOpen, setProfileOpen, isRewardsOpen, setRewardsOpen } = useUIStore();
   const { user, loading, signOut } = useAuth();
   const { data: profile } = useProfile();
   const location = useLocation();
+   useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await signOut();
@@ -29,7 +33,7 @@ export function Layout() {
     { path: '/squads', icon: Users, label: 'Squads' },
     { path: '/card', icon: IdCard, label: 'Profile' },
   ];
-  
+
   // 1. Show Split-Screen Auth if not logged in
   if (!loading && !user) {
     return <AuthSplitScreen />;

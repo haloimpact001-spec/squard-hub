@@ -52,9 +52,10 @@ export function AuthSplitScreen() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', backgroundColor: '#0F1318' }}>
-      {/* LEFT SIDE: Carousel & Branding (Desktop Only) */}
-      <div className="desktop-only-split" style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+    <div className="auth-layout">
+      
+      {/* 1. CAROUSEL SECTION (Shows on top for Mobile, Left for Desktop) */}
+      <div className="auth-carousel-section">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -68,28 +69,26 @@ export function AuthSplitScreen() {
             }}
           />
         ))}
+        {/* Dark gradient overlay to make text readable on mobile */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, rgba(15, 19, 24, 0.95) 0%, rgba(15, 19, 24, 0.4) 100%)',
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px'
+          background: 'linear-gradient(to top, rgba(15, 19, 24, 1) 0%, rgba(15, 19, 24, 0.4) 100%)',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px'
         }}>
-          <h1 className="logo-text" style={{ fontSize: '32px', color: '#fff', marginBottom: '16px' }}>
+          <h1 className="logo-text" style={{ fontSize: '24px', color: '#fff', marginBottom: '8px' }}>
             SQUARD HUB
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: '16px', maxWidth: '400px', lineHeight: '1.6' }}>
-            The ultimate toolkit for gamers. Create stylish names, custom stickers, and challenge friends in the global lobby.
+          <p style={{ color: '#94A3B8', fontSize: '14px', maxWidth: '400px', lineHeight: '1.5', display: 'none' }}>
+            {/* Hidden on mobile to save space, shown on desktop via media query if needed, but keeping it clean for now */}
           </p>
         </div>
       </div>
 
-      {/* RIGHT SIDE: Sign In / Sign Up Form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+      {/* 2. FORM SECTION (Shows on bottom for Mobile, Right for Desktop) */}
+      <div className="auth-form-section">
         <div style={{ width: '100%', maxWidth: '400px' }}>
-          <div className="mobile-only-logo" style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 className="logo-text" style={{ fontSize: '28px', color: '#fff' }}>SQUARD HUB</h1>
-          </div>
-
-          <div style={{ marginBottom: '32px' }}>
+          
+          <div style={{ marginBottom: '24px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
               {isLogin ? 'Welcome back' : 'Create an account'}
             </h2>
