@@ -97,7 +97,53 @@ export function Profile() {
                   </div>
                 </div>
               </div>
-
+          {/* PASSIVE INCOME: Refer & Earn Card */}
+          <div style={{ marginTop: '24px' }}>
+            <h3 style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '700', color: 'var(--header-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Coins size={14} color="var(--accent)" /> Passive Income
+            </h3>
+            <div className="card" style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--header-primary)' }}>Invite Friends, Earn Coins</div>
+                  <div className="text-muted" style={{ fontSize: '13px' }}>Get 50 coins for every friend who joins.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  readOnly 
+                  value={`https://squardhub-livid.vercel.app/?ref=${profile.referral_code}`} 
+                  className="input" 
+                  style={{ fontSize: '12px', color: 'var(--text-muted)' }}
+                />
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://squardhub-livid.vercel.app/?ref=${profile.referral_code}`);
+                    alert('Referral link copied! Share it on WhatsApp.');
+                  }}
+                  className="btn btn-primary" 
+                  style={{ minHeight: '40px', padding: '0 16px' }}
+                >
+                  Copy
+                </button>
+                <button 
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'Join Squard Hub',
+                        text: `Join me on Squard Hub and get free coins! Use my link:`,
+                        url: `https://squardhub-livid.vercel.app/?ref=${profile.referral_code}`
+                      });
+                    }
+                  }}
+                  className="btn btn-secondary" 
+                  style={{ minHeight: '40px', padding: '0 16px' }}
+                >
+                  Share
+                </button>
+              </div>
+            </div>
+          </div>
               {/* Account Settings */}
               <div style={{ marginTop: '24px' }}>
                 <h3 style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '700', color: 'var(--header-primary)', marginBottom: '8px' }}>Account Settings</h3>
