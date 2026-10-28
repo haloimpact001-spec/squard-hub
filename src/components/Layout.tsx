@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Home, Grid, Swords, Users, IdCard, Coins, LogOut } from 'lucide-react';
+import { Home, Grid, Swords, Users, User, Coins, LogOut, WifiOff, Bell, Settings } from 'lucide-react';
 import { AuthSplitScreen } from './AuthSplitScreen';
 import { ProfileModal } from './ProfileModal';
 import { DailyRewardsModal } from './DailyRewardsModal';
@@ -15,89 +15,108 @@ export function Layout() {
   const { user, loading, signOut } = useAuth();
   const { data: profile } = useProfile();
   const location = useLocation();
-   useEffect(() => {
-    trackPageView(location.pathname);
-  }, [location.pathname]);
 
-  const handleLogout = async () => {
-    await signOut();
-    setProfileOpen(false);
-  };
+  useEffect(() => { trackPageView(location.pathname); }, [location.pathname]);
 
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
+  }, []);
+  
+  const handleLogout = async () => { await signOut(); setProfileOpen(false); };
   const isActive = (path: string) => location.pathname === path;
 
-    const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/tools', icon: Grid, label: 'Tools' }, // <-- CHANGED THIS LINE
-    { path: '/lobby', icon: Swords, label: 'Lobby' },
-    { path: '/squads', icon: Users, label: 'Squads' },
-    { path: '/card', icon: IdCard, label: 'Profile' },
+  const navItems = [
+    { path: '/', icon: Home, label: 'Home', tooltip: 'Home' },
+    { path: '/tools', icon: Grid, label: 'Tools', tooltip: 'Tools Hub' },
+    { path: '/lobby', icon: Swords, label: 'Lobby', tooltip: 'Gamer Lobby' },
+    { path: '/squads', icon: Users, label: 'Squads', tooltip: 'Your Squads' },
   ];
 
-  // 1. Show Split-Screen Auth if not logged in
-  if (!loading && !user) {
-    return <AuthSplitScreen />;
-  }
+  if (!loading && !user) return <AuthSplitScreen />;
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: 'var(--bg-primary)', color: 'var(--text-normal)' }}>Loading Squard Hub...</div>;
 
-  // 2. Show loading state
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#0F1318', color: '#fff' }}>
-        Loading...
-      </div>
-    );
-  }
-
-  // 3. Show Main App Layout
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0F1318' }}>
-      {/* DESKTOP SIDEBAR */}
-      <aside className="desktop-sidebar">
-        <div style={{ padding: '8px 16px', marginBottom: '24px' }}>
-          <h1 className="logo-text" style={{ fontSize: '20px', margin: 0, color: '#fff' }}>SQUARD HUB</h1>
+    <div className="app-layout">
+      {isOffline && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: 'var(--danger)', color: '#fff', textAlign: 'center', padding: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <WifiOff size={16} /> You are offline
         </div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path} className={`sidebar-link ${isActive(item.path) ? 'active' : ''}`}>
-              <item.icon size={20} strokeWidth={2} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-        {profile && (
-          <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', marginTop: 'auto', backgroundColor: '#171C23', borderColor: '#232A33' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', color: '#000', fontSize: '16px' }}>
-              {profile.username.charAt(0).toUpperCase()}
-            </div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{profile.username}</div>
-              <div style={{ fontSize: '12px', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Coins size={12} strokeWidth={2} /> {profile.coins}
+      )}
+
+      {/* 1. LEFT ICON BAR */}
+      <nav className="icon-bar" style={{ marginTop: isOffline ? '33px' : '0' }}>
+        <div className="icon-btn active" title="Squard Hub" style={{ borderRadius: '16px', background: 'var(--accent)', color: '#000', fontWeight: '900', fontSize: '20px' }}>S</div>
+        <div style={{ width: '32px', height: '2px', background: '#35363C', borderRadius: '1px', margin: '4px 0' }} />
+        {navItems.map((item) => (
+          <Link key={item.path} to={item.path} className={`icon-btn ${isActive(item.path) ? 'active' : ''}`} title={item.tooltip}>
+            <item.icon size={24} strokeWidth={2} />
+          </Link>
+        ))}
+        <div style={{ flex: 1 }} />
+        <Link to="/profile" className={`icon-btn ${isActive('/profile') ? 'active' : ''}`} title="Profile" style={{ background: 'var(--accent)', color: '#000', fontWeight: '700' }}>
+          {profile?.username?.charAt(0).toUpperCase() || 'U'}
+        </Link>
+      </nav>
+
+      {/* 2. SIDEBAR */}
+      <aside className="sidebar" style={{ marginTop: isOffline ? '33px' : '0' }}>
+        <div className="sidebar-header">
+          <h1 className="logo-text" style={{ fontSize: '16px' }}>SQUARD HUB</h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="user-panel-btn"><Bell size={18} /></button>
+            <button className="user-panel-btn"><Settings size={18} /></button>
+          </div>
+        </div>
+        
+        <div className="sidebar-content">
+          <div className="text-xs" style={{ textTransform: 'uppercase', fontWeight: '700', marginBottom: '8px', paddingLeft: '8px' }}>Quick Actions</div>
+          <Link to="/lobby" className="sidebar-item"><Swords size={18} /> Create Match</Link>
+          <Link to="/squads" className="sidebar-item"><Users size={18} /> Find Squad</Link>
+          <Link to="/tools" className="sidebar-item"><Grid size={18} /> App Tools</Link>
+          
+          <div style={{ marginTop: '24px' }}>
+            <div className="text-xs" style={{ textTransform: 'uppercase', fontWeight: '700', marginBottom: '8px', paddingLeft: '8px' }}>Your Stats</div>
+            <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+              <Coins size={20} color="var(--accent)" />
+              <div>
+                <div className="text-xs">Squard Coins</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--header-primary)' }}>{profile?.coins || 0}</div>
               </div>
             </div>
-            <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} title="Sign Out">
-              <LogOut size={18} strokeWidth={2} />
-            </button>
           </div>
-        )}
+        </div>
+
+        {/* User Panel */}
+        <div className="user-panel">
+          <div className="user-panel-avatar">{profile?.username?.charAt(0).toUpperCase() || 'U'}</div>
+          <div className="user-panel-info">
+            <div className="user-panel-name">{profile?.username || 'User'}</div>
+            <div className="user-panel-discriminator">Online</div>
+          </div>
+          <button className="user-panel-btn" onClick={handleLogout} title="Sign Out"><LogOut size={18} /></button>
+        </div>
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="main-content">
+      {/* 3. MAIN CONTENT */}
+      <main className="main-content" style={{ marginTop: isOffline ? '33px' : '0' }}>
         <Outlet />
       </main>
 
       {/* MOBILE BOTTOM NAV */}
       <nav className="mobile-bottom-nav">
-        {navItems.map((item) => (
-          <Link key={item.path} to={item.path} className={`nav-item ${isActive(item.path) ? 'active' : ''}`}>
+        {[...navItems, { path: '/profile', icon: User, label: 'Profile' }].map((item) => (
+          <Link key={item.path} to={item.path} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: isActive(item.path) ? 'var(--accent)' : 'var(--text-muted)', textDecoration: 'none', fontSize: '11px', fontWeight: '500' }}>
             <item.icon size={22} strokeWidth={2} />
             <span>{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      {/* MODALS */}
       <ProfileModal isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} onLogout={handleLogout} />
       <DailyRewardsModal isOpen={isRewardsOpen} onClose={() => setRewardsOpen(false)} onProfileUpdate={() => {}} />
       <DirectiveGuide />

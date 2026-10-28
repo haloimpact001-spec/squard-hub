@@ -7,10 +7,9 @@ import { StickerMaker } from './pages/StickerMaker';
 import { Rewards } from './pages/Rewards';
 import { Lobby } from './pages/Lobby';
 import { GamerCard } from './pages/GamerCard';
-import { Squads } from './pages/Squads'; // <-- ENSURE THIS IS HERE
+import { Squads } from './pages/Squads';
 import { SquadChat } from './pages/SquadChat';
-   // ... inside Routes:
-   <Route path="chat" element={<SquadChat />} />
+import { Profile } from './pages/Profile'; // <-- ADDED IMPORT
 
 function App() {
   return (
@@ -23,8 +22,9 @@ function App() {
         <Route path="rewards" element={<Rewards />} />
         <Route path="lobby" element={<Lobby />} />
         <Route path="card" element={<GamerCard />} />
-        <Route path="squads" element={<Squads />} /> {/* <-- ENSURE THIS IS HERE */}
+        <Route path="squads" element={<Squads />} />
         <Route path="chat" element={<SquadChat />} />
+        <Route path="profile" element={<Profile />} /> {/* <-- ADDED ROUTE */}
       </Route>
     </Routes>
   );
